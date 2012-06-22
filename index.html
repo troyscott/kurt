@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>kurt by blob8108</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>kurt</h1>
+          <h2>Python library for reading/writing MIT's Scratch file format.</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/blob8108/kurt/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/blob8108/kurt/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/blob8108/kurt" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <p>Kurt is a Python library for reading/writing Scratch project (.sb) and sprite files.</p>
+
+<p>So far, it can read/write sprites and their properties, including scripts, blocks, variables, and lists. It can read costumes and export them to separate image files. It can also export scripts to <code>scratchblocks</code> format for pasting into the Scratch forums/wiki.</p>
+
+<p>You could use it for:</p>
+
+<ul>
+<li>converting to another format (like the <code>scratchblocks</code> converter does)</li>
+<li>generating Scratch projects using Python code</li>
+<li>analysing the scripts in a project</li>
+<li>
+<em>(someday, perhaps...)</em> making a "Scratch IDE" text-based editor for Scratch scripts... :)</li>
+</ul><p>(It <em>can't</em> write images as costumes or read/write sounds yet, but they're on the to-do list — see below)</p>
+
+<p><strong>WARNING</strong>: Make sure you take a backup of your Scratch projects before saving anything with kurt! kurt is by no means fully tested. I can't accept responsibility for corrupting your files.</p>
+
+<p>If you're interested in technical details of how the format works: the code should be pretty self-documenting; but check out the documentation on the <a href="http://wiki.scratch.mit.edu/wiki/Scratch_File_Format">Scratch wiki</a>, which might be more readable...</p>
+
+<h2>Installation</h2>
+
+<p>Download the latest version of Kurt and extract the <code>kurt</code> folder somewhere in your <code>sys.path</code> — or in the same directory as your code, if you prefer.</p>
+
+<p>You'll need the <strong>latest version</strong> of the awesome <a href="http://construct.wikispaces.com/"><strong>Construct</strong></a> library — used for defining the format. It currently appears to be available <a href="http://pypi.python.org/pypi/construct">here</a>. (I'm using Construct version 2.04).</p>
+
+<p>For saving images, you'll need the <a href="https://code.google.com/p/pypng/"><strong>PyPNG</strong></a> module. Kurt <em>should</em> work without it, if you don't want to save images — but it's strongly recommended.</p>
+
+<p>Tested with <strong>Python 2.6</strong>. Works with <strong>Scratch 1.4</strong>; not tested with earlier versions, but possibly works.</p>
+
+<p><a href="http://scratch.mit.edu/">Scratch</a> is created by the Lifelong Kindergarten Group at the MIT Media Lab.</p>
+
+<h2>Recent Changes</h2>
+
+<h3>v1.2, images:</h3>
+
+<ul>
+<li>
+<p>Can now parse images! :D</p>
+
+<p>Well, most images. If not, try reloading the project with Scratch and saving it again — this sometimes helps.</p>
+
+<p>Unfortunately, Kurt doesn't compress the images when saving them back to the file again (yet), so it may massively increase your file size :P Again, you can just open it in Scratch and save it again, and the file size will be back to normal.</p>
+</li>
+<li><p>Split Sprite.media into separate costumes/sounds lists.</p></li>
+</ul><h3>v1.1, scripts:</h3>
+
+<ul>
+<li>
+<code>Script</code> and <code>Block</code> classes for manipulating scripts.</li>
+<li>
+<strong>Block plugin</strong> formatter — reads all the scripts in a project file and outputs <code>[scratchblocks]</code> syntax code for posting on the Scratch forums/wiki.</li>
+<li>Filled out the <code>_fields</code> list for most of the objects in <code>user_objects</code> from the Squeak source (not the unused ones), so there should now be no "undefined" fields.</li>
+<li>
+<code>Color</code> is now parsed correctly</li>
+<li>Added <code>ScratchProjectFile.sprites</code> shortcut as an alias for <code>project.stage.sprites</code>
+</li>
+</ul><h2>Usage</h2>
+
+<p>Here's a quick getting started — grab a Python interpreter (Python's <code>&gt;&gt;&gt;</code> prompt — just type <code>python</code> into your terminal, or load up IDLE), and have a go!</p>
+
+<p>You'll probably just want to use the provided <code>ScratchProjectFile</code> and <code>ScratchSpriteFile</code> classes. Load them by passing the path to the file to their constructor and use their provided <code>.save()</code> methods.</p>
+
+<p>You can import just these classes them using:</p>
+
+<pre><code>from kurt.files import *
+</code></pre>
+
+<p>Load a file (you'll find a preview file, <code>game.sb</code>, saved in the <code>tests</code> directory; but feel free to try it with any Scratch project file).</p>
+
+<pre><code># Just pass in the absolute or relative path to the file:
+project = ScratchProjectFile("tests/game.sb")
+
+# You can reload the file at any time with .load()
+</code></pre>
+
+<p>Inspect project:</p>
+
+<pre><code>project.info['author'] # u'blob8108'
+project.stage # &lt;ScratchStageMorph(Stage)&gt;
+
+# List fields on object:
+project.stage.fields.keys() # ['volume', 'hPan', 'sprites', 'lists', 'vars', 'obsoleteSavedState', 'color', 'media', 'sceneStates', 'bounds', 'submorphs', 'zoom', 'isClone', 'blocksBin', 'flags', 'objName', 'owner', 'tempoBPM', 'vPan', 'properties', 'costume']
+
+# Access fields using dot notation:
+project.stage.tempoBPM # 60
+project.stage.sprites # OrderedCollection([&lt;ScratchSpriteMorph(ScratchCat)&gt;])
+
+cat = project.stage.sprites[0]
+cat.name # u'ScratchCat'
+</code></pre>
+
+<p>Most of the objects you're interested in, like <code>ScratchStageMorph</code> and <code>ScratchSpriteMorph</code>, inherit from <code>UserObject</code>. You can use <code>.fields.keys()</code> to see the available fields on one of these objects.</p>
+
+<p><code>FixedObjects</code> like <code>OrderedCollection</code> have a <code>.value</code> property to access their value.</p>
+
+<p>Inline objects, such as <code>int</code> and <code>bool</code>, are converted transparently to their Pythonic counterparts. <code>Array</code> and <code>Dictionary</code> are converted to <code>list</code> and <code>dict</code>, too. </p>
+
+<p>Make changes:</p>
+
+<pre><code>cat.vars # {u'vx': 0.0}
+cat.vars['vx'] = 100
+</code></pre>
+
+<p>Save:</p>
+
+<pre><code>project.save()
+</code></pre>
+
+<p>Now re-open the project with Scratch!</p>
+
+<p>Everything should, of course, work perfectly; if you have any problems, please file an issue, and I'll take a look! (:</p>
+
+<h3>Scripts</h3>
+
+<p>A list of scripts can be found on the <code>scripts</code> property of both sprites and the stage.</p>
+
+<pre><code>&gt;&gt;&gt; cat.scripts
+[Script(Point(23, 36.0),
+Block('EventHatMorph', 'Scratch-StartClicked'),
+Block('xpos:', 0),
+Block('doForever',  [
+        Block('doIf', 
+            Block('keyPressed:', 'right arrow'),
+            [
+                Block('changeVariable', u'vx', &lt;#changeVar:by:&gt;, 2),
+            ]),
+        Block('doIf', 
+            Block('keyPressed:', 'left arrow'),
+            [
+                Block('changeVariable', u'vx', &lt;#changeVar:by:&gt;, -2),
+            ]),
+        Block('changeVariable', u'vx', &lt;#setVar:to:&gt;, 
+            Block('*', 
+                Block('readVariable', u'vx'),
+            0.80000000000000004),
+        ),
+        Block('changeXposBy:', 
+            Block('readVariable', u'vx'),
+        ),
+    ]))]
+</code></pre>
+
+<p>Use the <code>to_block_plugin</code> method to print them nicely:</p>
+
+<pre><code>&gt;&gt;&gt; print cat.scripts[0].to_block_plugin()
+when green flag clicked
+set x to (0)
+forever
+    if &lt;key [right arrow v] pressed?&gt;
+        change [vx v] by (2)
+    end
+    if &lt;key [left arrow v] pressed?&gt;
+        change [vx v] by (-2)
+    end
+    set [vx v] to ((vx) * (0.8))
+    change x by (vx)
+end
+</code></pre>
+
+<p>This is identical to <code>scratchblocks</code> format, so you can paste them straight into the Scratch forums or wiki.</p>
+
+<p>You'll find a script for automatically exporting all the scripts in a project file to <code>scratchblocks</code> format under <code>util/block_plugin.py</code>. Just pass it the path to your project file. For example:</p>
+
+<pre><code>python util/block_plugin.py tests/game.sb
+</code></pre>
+
+<h3>Images</h3>
+
+<p>You can find costumes under a sprite's <code>costumes</code> property (similarly for stage <code>backgrounds</code>).</p>
+
+<pre><code>cat.costumes # [&lt;ImageMedia(costume1)&gt;, &lt;ImageMedia(costume2)&gt;]
+image = cat.costumes[0]
+</code></pre>
+
+<p>Save to an external file:</p>
+
+<pre><code>image.save("scratch_cat.png")
+</code></pre>
+
+<p>There's a script under <code>util/export_images.py</code> for exporting all the costumes in a Scratch project to separate files, with a folder for each sprite. It automatically makes a folder with the name <code>&lt;project name&gt; files</code> to put the images in. Again, just pass it the path to your project.</p>
+
+<pre><code>$ python util/export_images.py tests/game.sb 
+$ ls "tests/game files"
+ScratchCat
+$ ls "tests/game files/ScratchCat"
+costume1.png    costume2.png
+</code></pre>
+
+<h2>Licence</h2>
+
+<p>Kurt is released under the <a href="http://www.gnu.org/licenses/lgpl">LGPL</a> Version 3 (or any later version).</p>
+
+<p>I'm not a lawyer; but I <em>think</em> this means while you can use Kurt in your own, non-GPL'd code, any Kurt modifications must be distributed under the (L)GPL and include the source code. <em>(This is not legal advice and does not affect the terms as stated in the licence...)</em></p>
+
+<h2>Todo</h2>
+
+<ul>
+<li>
+<p>Parse images DONE! :D</p>
+
+<ul>
+<li>Compress Bitmap to ByteArray on save (using run-length encoding)</li>
+<li>Images with depth <code>16</code> are not supported <em>(need an example)</em>
+</li>
+<li>Images with depth <code>1</code> and <code>2</code> are buggy</li>
+<li>Default color values — <code>squeak_colors</code> <em>(need an example)</em>
+</li>
+</ul>
+</li>
+<li><p>Import images from a separate <code>.png</code> or <code>.jpg</code> file and save them into a Scratch file.</p></li>
+<li><p>Make some decent tests</p></li>
+<li><p>Read/write external Sound files</p></li>
+<li><p>"Default project" for building projects entirely "from scratch" (as it were) in Python code?</p></li>
+<li>
+<p>Optimise <code>ObjectNetworkAdapter</code> for building large files. </p>
+
+<p>Kurt is currently very quick at parsing files; but pretty slow at writing them, particularly ones with very long scripts.</p>
+</li>
+<li><p>Optimise image parsing.</p></li>
+</ul>
+        </section>
+
+        <footer>
+          kurt is maintained by <a href="https://github.com/blob8108">blob8108</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
